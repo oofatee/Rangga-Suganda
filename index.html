@@ -221,44 +221,80 @@
     position: sticky;
     top: 70px;
     z-index: 15;
-    display: flex;
-    gap: 2px;
-    background: rgba(11,26,13,0.06);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    background: white;
     padding: 6px;
-    margin: 0 24px;
-    transform: translateY(-24px);
-    border-radius: 3px;
-    flex-wrap: wrap;
+    margin: -26px 24px 0;
+    border-radius: 6px;
+    border: 1px solid rgba(11,26,13,0.08);
+    box-shadow: 0 16px 34px rgba(11,26,13,0.14);
   }
   .tab-btn {
-    flex: 1 1 160px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     background: transparent;
     border: none;
-    padding: 14px 16px;
+    padding: 15px 16px;
     font-family: inherit;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    color: var(--ink);
-    opacity: 0.55;
     cursor: pointer;
-    border-radius: 2px;
-    transition: 0.2s ease;
+    border-radius: 4px;
     text-align: left;
+    transition: 0.2s ease;
+    min-width: 0;
   }
-  .tab-btn .tab-label { display: block; }
-  .tab-btn .tab-count {
+  .tab-eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--gold);
+    opacity: 0.55;
+    flex-shrink: 0;
+    transition: 0.2s ease;
+  }
+  .tab-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1px;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: 0.2s ease;
+  }
+  .tab-count {
     font-family: 'Courier New', monospace;
     font-size: 0.68rem;
-    opacity: 0.7;
-    margin-top: 2px;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(11,26,13,0.07);
+    color: var(--ink);
+    flex-shrink: 0;
+    transition: 0.2s ease;
   }
-  .tab-btn:hover { opacity: 0.85; }
+  .tab-btn:hover:not(.active) {
+    background: rgba(11,26,13,0.05);
+  }
   .tab-btn.active {
-    background: white;
-    opacity: 1;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    border-bottom: 3px solid var(--gold);
+    background: var(--ink);
+  }
+  .tab-btn.active .tab-eyebrow { color: var(--gold); opacity: 1; }
+  .tab-btn.active .tab-label { color: var(--cream); }
+  .tab-btn.active .tab-count { background: var(--gold); color: var(--ink); }
+
+  @media (max-width: 640px) {
+    .tab-nav { grid-template-columns: 1fr; margin: -18px 16px 0; }
+    .tab-btn { padding: 13px 14px; }
   }
 
   /* ===== SECTIONS ===== */
@@ -448,16 +484,19 @@
   <!-- ===== TAB NAV ===== -->
   <nav class="tab-nav" id="tabNav">
     <button class="tab-btn active" data-target="tab-permen" type="button">
+      <span class="tab-eyebrow">01</span>
       <span class="tab-label">Permen</span>
-      <span class="tab-count mono">2 dokumen</span>
+      <span class="tab-count">2</span>
     </button>
     <button class="tab-btn" data-target="tab-uu" type="button">
+      <span class="tab-eyebrow">02</span>
       <span class="tab-label">Undang-Undang</span>
-      <span class="tab-count mono">3 dokumen</span>
+      <span class="tab-count">3</span>
     </button>
     <button class="tab-btn" data-target="tab-pedoman" type="button">
+      <span class="tab-eyebrow">03</span>
       <span class="tab-label">Pedoman Teknis</span>
-      <span class="tab-count mono">3 dokumen</span>
+      <span class="tab-count">3</span>
     </button>
   </nav>
 
