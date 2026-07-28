@@ -16,11 +16,18 @@
     --ink: #0b1a0d;
   }
 
+  html { scroll-behavior: smooth; }
+
   body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background: var(--cream);
     color: var(--ink);
     line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
 
   .mono {
@@ -29,15 +36,26 @@
     text-transform: uppercase;
   }
 
-  /* ===== HERO ===== */
-  .hero {
-    position: relative;
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+
+  /* ===== GATE (landing screen) ===== */
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background: radial-gradient(circle at 30% 20%, var(--green-bright) 0%, var(--green-dark) 70%);
     color: var(--cream);
-    padding: 70px 24px 90px;
+    padding: 70px 24px 50px;
     overflow: hidden;
+    transition: transform 0.85s cubic-bezier(.65,0,.35,1), opacity 0.7s ease;
   }
-  .hero::before {
+  .gate::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -46,47 +64,133 @@
       repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, transparent 2px);
     pointer-events: none;
   }
-  .hero-top {
+  .gate.leaving {
+    transform: translateY(-100%);
+    opacity: 0.4;
+  }
+  .gate-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     font-size: 0.7rem;
     position: relative;
     z-index: 2;
-  }
-  .hero-top .mono {
-    line-height: 1.6;
     opacity: 0.85;
   }
-  .hero-logo {
+  .gate-mid {
     text-align: center;
-    margin: 30px 0;
     position: relative;
     z-index: 2;
   }
-  .hero-logo img {
-    height: 130px;
+  .gate-logo {
+    margin-bottom: 26px;
+    opacity: 0;
+    animation: rise 0.8s 0.1s ease forwards;
+  }
+  .gate-logo img {
+    height: 120px;
     filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));
   }
-  .hero-title {
-    text-align: center;
-    position: relative;
-    z-index: 2;
-  }
-  .hero-title h1 {
-    font-size: clamp(2.8rem, 9vw, 5.5rem);
+  .gate-mid h1 {
+    font-size: clamp(2.6rem, 9vw, 5.2rem);
     font-weight: 900;
     letter-spacing: -2px;
     line-height: 0.95;
     color: var(--gold);
     text-shadow: 0 6px 30px rgba(0,0,0,0.35);
+    opacity: 0;
+    animation: rise 0.8s 0.25s ease forwards;
   }
-  .hero-title .sub {
+  .gate-mid .sub {
     margin-top: 14px;
     font-size: 0.85rem;
     letter-spacing: 1.5px;
-    opacity: 0.9;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0;
+    animation: rise 0.8s 0.4s ease forwards;
   }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .gate-bottom {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    animation: rise 0.8s 0.6s ease forwards;
+  }
+  .gate-hint {
+    font-size: 0.72rem;
+    opacity: 0.75;
+    max-width: 340px;
+    text-align: center;
+  }
+  .lanjut-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 15px 30px;
+    border-radius: 2px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-family: inherit;
+  }
+  .lanjut-btn:hover {
+    background: var(--cream);
+    transform: translateY(-2px);
+  }
+  .lanjut-btn .arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+  .lanjut-btn:hover .arrow { transform: translateY(3px); }
+
+  /* ===== MAIN CONTENT (revealed after gate) ===== */
+  main {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  main.revealed {
+    animation: mainIn 0.7s ease forwards;
+  }
+  @keyframes mainIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* compact header shown once inside */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    background: var(--ink);
+    color: var(--cream);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 2px solid var(--gold);
+  }
+  .top-bar .brand {
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: -0.5px;
+  }
+  .top-bar img { height: 34px; }
+  .top-bar .brand-row { display: flex; align-items: center; gap: 12px; }
 
   /* ===== INTRO BAND ===== */
   .intro-band {
@@ -112,11 +216,57 @@
     opacity: 0.9;
   }
 
+  /* ===== TABS ===== */
+  .tab-nav {
+    position: sticky;
+    top: 70px;
+    z-index: 15;
+    display: flex;
+    gap: 2px;
+    background: rgba(11,26,13,0.06);
+    padding: 6px;
+    margin: 0 24px;
+    transform: translateY(-24px);
+    border-radius: 3px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1 1 160px;
+    background: transparent;
+    border: none;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--ink);
+    opacity: 0.55;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: 0.2s ease;
+    text-align: left;
+  }
+  .tab-btn .tab-label { display: block; }
+  .tab-btn .tab-count {
+    font-family: 'Courier New', monospace;
+    font-size: 0.68rem;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  .tab-btn:hover { opacity: 0.85; }
+  .tab-btn.active {
+    background: white;
+    opacity: 1;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    border-bottom: 3px solid var(--gold);
+  }
+
   /* ===== SECTIONS ===== */
   .section {
-    padding: 50px 24px;
+    padding: 40px 24px 50px;
     border-bottom: 1px solid rgba(0,0,0,0.08);
   }
+  .section[hidden] { display: none; }
   .section-label {
     font-size: 0.75rem;
     color: var(--green);
@@ -151,6 +301,16 @@
     padding: 22px 24px;
     position: relative;
     transition: 0.2s ease;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: cardIn 0.55s ease forwards;
+  }
+  .doc-card:nth-child(1) { animation-delay: 0.05s; }
+  .doc-card:nth-child(2) { animation-delay: 0.15s; }
+  .doc-card:nth-child(3) { animation-delay: 0.25s; }
+  .doc-card:nth-child(4) { animation-delay: 0.35s; }
+  @keyframes cardIn {
+    to { opacity: 1; transform: translateY(0); }
   }
   .doc-card:hover {
     border-color: var(--gold);
@@ -245,120 +405,228 @@
 </head>
 <body>
 
-<!-- ===== HERO ===== -->
-<div class="hero">
-  <div class="hero-top">
+<!-- ===== GATE / LANDING ===== -->
+<div class="gate" id="gate">
+  <div class="gate-top mono">
+    <span>KAB. INDRAGIRI HULU</span>
+    <span>ARSIP DIGITAL TERBUKA</span>
   </div>
-  <div class="hero-logo">
-    <img src="img/logo-indragiri-hulu.png" alt="Logo Indragiri Hulu">
-  </div>
-  <div class="hero-title">
+  <div class="gate-mid">
+    <div class="gate-logo">
+      <img src="img/logo-indragiri-hulu.png" alt="Logo Indragiri Hulu">
+    </div>
     <h1>SI-TELADAN</h1>
-    <div class="sub">SISTEM INFORMASI TEKNIK LEGAL DRAFTING RANCANGAN PERATURAN BUPATI INDRAGIRI HULU</div>
+    <div class="sub mono">SISTEM INFORMASI TEKNIK LEGAL DRAFTING RANCANGAN PERATURAN BUPATI INDRAGIRI HULU</div>
+  </div>
+  <div class="gate-bottom">
+    <p class="gate-hint">Dasar hukum, undang-undang, dan pedoman teknis penyusunan Rancangan Peraturan Bupati — tersusun rapi di dalam.</p>
+    <button class="lanjut-btn" id="lanjutBtn" type="button">
+      Lanjut <span class="arrow">↓</span>
+    </button>
   </div>
 </div>
 
-<!-- ===== INTRO ===== -->
-<div class="intro-band">
-  <div class="headline">Dasar hukum & teknis penyusunan, dalam satu tempat.</div>
-  <div class="desc">
-    SI-TELADAN merupakan platform digital yang menyediakan dasar hukum dan teknis penyusunan Rancangan Peraturan Bupati Indragiri Hulu. Seluruh dokumen dapat diakses dan diunduh secara terbuka oleh masyarakat.
-  </div>
-</div>
+<!-- ===== MAIN CONTENT ===== -->
+<main id="main">
 
-<!-- ===== SECTION: PERMENDAGRI & PERMEN ===== -->
-<div class="section">
-  <div class="section-label mono">Kategori 01</div>
-  <div class="section-title">Permen</div>
-  <div class="doc-grid">
-
-    <div class="doc-card">
-      <span class="doc-num mono">PERMEN · 80 / 2015</span>
-      <a class="doc-title" href="pdf/Permen-No-80-Tahun-2015.pdf" target="_blank">
-        Peraturan Menteri No. 80 Tahun 2015 tentang Pembentukan Produk Hukum Daerah
-      </a>
-      <p class="doc-desc">Dasar hukum awal yang mengatur tahapan dan tata cara pembentukan produk hukum daerah sebelum mengalami perubahan.</p>
-      <a class="btn" href="pdf/Permen-No-80-Tahun-2015.pdf" target="_blank">Lihat / Unduh →</a>
+  <div class="top-bar">
+    <div class="brand-row">
+      <img src="img/logo-indragiri-hulu.png" alt="Logo Indragiri Hulu">
+      <span class="brand">SI-TELADAN</span>
     </div>
-
-    <div class="doc-card">
-      <span class="doc-num mono">PERMENDAGRI · 120 / 2018</span>
-      <a class="doc-title" href="pdf/Permendagri-No-120-Tahun-2018.pdf" target="_blank">
-        Perubahan atas Permendagri No. 80 Tahun 2015 tentang Pembentukan Produk Hukum Daerah
-      </a>
-      <p class="doc-desc">Mengatur perubahan mekanisme pembentukan, fasilitasi, klarifikasi, dan pembatalan produk hukum daerah (Perda, Perkada, dan Peraturan DPRD).</p>
-      <a class="btn" href="pdf/Permendagri-No-120-Tahun-2018.pdf" target="_blank">Lihat / Unduh →</a>
-    </div>
-
+    <span class="mono" style="font-size:0.68rem; opacity:0.7;">INDRAGIRI HULU</span>
   </div>
-</div>
 
-<!-- ===== SECTION: UNDANG-UNDANG ===== -->
-<div class="section">
-  <div class="section-label mono">Kategori 02</div>
-  <div class="section-title">Undang-Undang</div>
-  <div class="doc-grid">
-
-    <div class="doc-card">
-      <span class="doc-num mono">UU · 12 / 2011</span>
-      <a class="doc-title" href="pdf/UU-No-12-Tahun-2011.pdf" target="_blank">
-        Undang-Undang No. 12 Tahun 2011 tentang Pembentukan Peraturan Perundang-undangan
-      </a>
-      <p class="doc-desc">Undang-Undang induk yang mengatur jenis, hierarki, dan tata cara pembentukan peraturan perundang-undangan di Indonesia, mulai dari perencanaan hingga pengundangan.</p>
-      <a class="btn" href="pdf/UU-No-12-Tahun-2011.pdf" target="_blank">Lihat / Unduh →</a>
+  <!-- ===== INTRO ===== -->
+  <div class="intro-band">
+    <div class="headline">Dasar hukum & teknis penyusunan, dalam satu tempat.</div>
+    <div class="desc">
+      SI-TELADAN merupakan platform digital yang menyediakan dasar hukum dan teknis penyusunan Rancangan Peraturan Bupati Indragiri Hulu. Seluruh dokumen dapat diakses dan diunduh secara terbuka oleh masyarakat.
     </div>
+  </div>
 
-    <div class="doc-card">
-      <span class="doc-num mono">UU · 15 / 2019</span>
-      <a class="doc-title" href="pdf/UU-No-15-Tahun-2019.pdf" target="_blank">
-        Perubahan atas UU No. 12 Tahun 2011 tentang Pembentukan Peraturan Perundang-undangan
-      </a>
-      <p class="doc-desc">Menyempurnakan ketentuan Prolegnas, mekanisme pembahasan RUU lintas periode, serta menambahkan pengaturan Pemantauan dan Peninjauan Undang-Undang.</p>
-      <a class="btn" href="pdf/UU-No-15-Tahun-2019.pdf" target="_blank">Lihat / Unduh →</a>
+  <!-- ===== TAB NAV ===== -->
+  <nav class="tab-nav" id="tabNav">
+    <button class="tab-btn active" data-target="tab-permen" type="button">
+      <span class="tab-label">Permen</span>
+      <span class="tab-count mono">2 dokumen</span>
+    </button>
+    <button class="tab-btn" data-target="tab-uu" type="button">
+      <span class="tab-label">Undang-Undang</span>
+      <span class="tab-count mono">3 dokumen</span>
+    </button>
+    <button class="tab-btn" data-target="tab-pedoman" type="button">
+      <span class="tab-label">Pedoman Teknis</span>
+      <span class="tab-count mono">3 dokumen</span>
+    </button>
+  </nav>
+
+  <!-- ===== SECTION: PERMEN ===== -->
+  <div class="section" id="tab-permen">
+    <div class="section-label mono">Kategori 01</div>
+    <div class="section-title">Permen</div>
+    <div class="doc-grid">
+
+      <div class="doc-card">
+        <span class="doc-num mono">PERMEN · 80 / 2015</span>
+        <a class="doc-title" href="pdf/Permen-No-80-Tahun-2015.pdf" target="_blank">
+          Peraturan Menteri No. 80 Tahun 2015 tentang Pembentukan Produk Hukum Daerah
+        </a>
+        <p class="doc-desc">Dasar hukum awal yang mengatur tahapan dan tata cara pembentukan produk hukum daerah sebelum mengalami perubahan.</p>
+        <a class="btn" href="pdf/Permen-No-80-Tahun-2015.pdf" target="_blank">Lihat / Unduh →</a>
+      </div>
+
+      <div class="doc-card">
+        <span class="doc-num mono">PERMENDAGRI · 120 / 2018</span>
+        <a class="doc-title" href="pdf/Permendagri-No-120-Tahun-2018.pdf" target="_blank">
+          Perubahan atas Permendagri No. 80 Tahun 2015 tentang Pembentukan Produk Hukum Daerah
+        </a>
+        <p class="doc-desc">Mengatur perubahan mekanisme pembentukan, fasilitasi, klarifikasi, dan pembatalan produk hukum daerah (Perda, Perkada, dan Peraturan DPRD).</p>
+        <a class="btn" href="pdf/Permendagri-No-120-Tahun-2018.pdf" target="_blank">Lihat / Unduh →</a>
+      </div>
+
     </div>
+  </div>
 
-    <div class="doc-card">
-      <span class="doc-num mono">UU · 13 / 2022</span>
-      <a class="doc-title" href="pdf/UU-No-13-Tahun-2022.pdf" target="_blank">
-        Perubahan Kedua atas UU No. 12 Tahun 2011 tentang Pembentukan Peraturan Perundang-undangan
-      </a>
-      <p class="doc-desc">Menambahkan pengaturan metode omnibus, mekanisme perbaikan kesalahan teknis penulisan RUU, penguatan partisipasi masyarakat yang bermakna, serta pembentukan Peraturan Perundang-undangan secara elektronik.</p>
-      <a class="btn" href="pdf/UU-No-13-Tahun-2022.pdf" target="_blank">Lihat / Unduh →</a>
+  <!-- ===== SECTION: UNDANG-UNDANG ===== -->
+  <div class="section" id="tab-uu" hidden>
+    <div class="section-label mono">Kategori 02</div>
+    <div class="section-title">Undang-Undang</div>
+    <div class="doc-grid">
+
+      <div class="doc-card">
+        <span class="doc-num mono">UU · 12 / 2011</span>
+        <a class="doc-title" href="pdf/UU-No-12-Tahun-2011.pdf" target="_blank">
+          Undang-Undang No. 12 Tahun 2011 tentang Pembentukan Peraturan Perundang-undangan
+        </a>
+        <p class="doc-desc">Undang-Undang induk yang mengatur jenis, hierarki, dan tata cara pembentukan peraturan perundang-undangan di Indonesia, mulai dari perencanaan hingga pengundangan.</p>
+        <a class="btn" href="pdf/UU-No-12-Tahun-2011.pdf" target="_blank">Lihat / Unduh →</a>
+      </div>
+
+      <div class="doc-card">
+        <span class="doc-num mono">UU · 15 / 2019</span>
+        <a class="doc-title" href="pdf/UU-No-15-Tahun-2019.pdf" target="_blank">
+          Perubahan atas UU No. 12 Tahun 2011 tentang Pembentukan Peraturan Perundang-undangan
+        </a>
+        <p class="doc-desc">Menyempurnakan ketentuan Prolegnas, mekanisme pembahasan RUU lintas periode, serta menambahkan pengaturan Pemantauan dan Peninjauan Undang-Undang.</p>
+        <a class="btn" href="pdf/UU-No-15-Tahun-2019.pdf" target="_blank">Lihat / Unduh →</a>
+      </div>
+
+      <div class="doc-card">
+        <span class="doc-num mono">UU · 13 / 2022</span>
+        <a class="doc-title" href="pdf/UU-No-13-Tahun-2022.pdf" target="_blank">
+          Perubahan Kedua atas UU No. 12 Tahun 2011 tentang Pembentukan Peraturan Perundang-undangan
+        </a>
+        <p class="doc-desc">Menambahkan pengaturan metode omnibus, mekanisme perbaikan kesalahan teknis penulisan RUU, penguatan partisipasi masyarakat yang bermakna, serta pembentukan Peraturan Perundang-undangan secara elektronik.</p>
+        <a class="btn" href="pdf/UU-No-13-Tahun-2022.pdf" target="_blank">Lihat / Unduh →</a>
+      </div>
+
     </div>
-
   </div>
-</div>
 
-<!-- ===== SECTION: PEDOMAN TEKNIS ===== -->
-<div class="section">
-  <div class="section-label mono">Kategori 03</div>
-  <div class="section-title">Pedoman Teknis</div>
-  <div class="doc-grid">
+  <!-- ===== SECTION: PEDOMAN TEKNIS ===== -->
+  <div class="section" id="tab-pedoman" hidden>
+    <div class="section-label mono">Kategori 03</div>
+    <div class="section-title">Pedoman Teknis</div>
+    <div class="doc-grid">
 
-    <div class="doc-card">
-      <span class="doc-num mono">PEDOMAN · SISTEMATIKA</span>
-      <a class="doc-title" href="pdf/Sistematika-Rancangan-Peraturan-Bupati-Indragiri-Hulu.pdf" target="_blank">
-        Sistematika Rancangan Peraturan Bupati Indragiri Hulu
-      </a>
-      <p class="doc-desc">Panduan teknis penyusunan Rancangan Peraturan Bupati, meliputi judul, pembukaan, batang tubuh, penutup, dan lampiran sesuai kaidah legal drafting.</p>
-      <a class="btn" href="pdf/Sistematika-Rancangan-Peraturan-Bupati-Indragiri-Hulu.pdf" target="_blank">Lihat / Unduh →</a>
+      <div class="doc-card">
+        <span class="doc-num mono">PEDOMAN · SISTEMATIKA</span>
+        <a class="doc-title" href="pdf/Sistematika-Rancangan-Peraturan-Bupati-Indragiri-Hulu.pdf" target="_blank">
+          Sistematika Rancangan Peraturan Bupati Indragiri Hulu
+        </a>
+        <p class="doc-desc">Panduan teknis penyusunan Rancangan Peraturan Bupati, meliputi judul, pembukaan, batang tubuh, penutup, dan lampiran sesuai kaidah legal drafting.</p>
+        <a class="btn" href="pdf/Sistematika-Rancangan-Peraturan-Bupati-Indragiri-Hulu.pdf" target="_blank">Lihat / Unduh →</a>
+      </div>
+
+      <div class="doc-card">
+        <span class="doc-num mono">E-BOOK · SITELADAN</span>
+        <a class="doc-title" href="pdf/PEDOMAN_PENYUSUNAN_SISTEMATIKAN_RANCANGAN_PERATURAN_BUPATI_INDRAGIRI_HULU.pdf" target="_blank">
+          Implementasi SITELADAN: Pedoman Teknis Penyusunan Sistematika Rancangan Peraturan Bupati
+        </a>
+        <p class="doc-desc">E-book lengkap oleh Rangga Suganda, S.H yang memuat latar belakang, dasar hukum, standar format penulisan, hingga sistematika Rancangan Peraturan Bupati secara rinci per bagian (judul, pembukaan, batang tubuh, penutup, lampiran).</p>
+        <a class="btn" href="pdf/PEDOMAN_PENYUSUNAN_SISTEMATIKAN_RANCANGAN_PERATURAN_BUPATI_INDRAGIRI_HULU.pdf" target="_blank">Lihat / Unduh →</a>
+      </div>
+
+      <div class="doc-card">
+        <span class="doc-num mono">TEMPLATE · WORD</span>
+        <a class="doc-title" href="doc/Template_Rancangan_Peraturan_Bupati_Indragiri_Hulu.doc" target="_blank">
+          Template Rancangan Peraturan Bupati Indragiri Hulu
+        </a>
+        <p class="doc-desc">Berkas Word siap pakai dengan format naskah dinas resmi (kertas F4, huruf Bookman Old Style 12pt) untuk mempercepat penyusunan Rancangan Peraturan Bupati oleh perangkat daerah pemrakarsa.</p>
+        <a class="btn" href="doc/Template_Rancangan_Peraturan_Bupati_Indragiri_Hulu.doc" target="_blank">Unduh Template →</a>
+      </div>
+
     </div>
+  </div>
 
+  <!-- ===== STRIP ===== -->
+  <div class="strip">
+    <div class="big">Seluruh dokumen terbuka untuk diunduh siapa saja.</div>
+    <div class="mono">TRANSPARANSI &amp;<br>PARTISIPASI PUBLIK</div>
   </div>
-</div>
 
-<!-- ===== FOOTER ===== -->
-<footer>
-  <div>
-    <div class="brand">SI-TELADAN</div>
-    <div class="mono" style="margin-top:8px;">SISTEM INFORMASI TEKNIK LEGAL DRAFTING RANCANGAN PERATURAN BUPATI INDRAGIRI HULU</div>
-  </div>
-  <div class="mono">
-    DOKUMEN INI DISEDIAKAN<br>
-    UNTUK KEPENTINGAN<br>
-    INFORMASI PUBLIK
-  </div>
-</footer>
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div>
+      <div class="brand">SI-TELADAN</div>
+      <div class="mono" style="margin-top:8px;">SISTEM INFORMASI TEKNIK LEGAL DRAFTING RANCANGAN PERATURAN BUPATI INDRAGIRI HULU</div>
+    </div>
+    <div class="mono">
+      DOKUMEN INI DISEDIAKAN<br>
+      UNTUK KEPENTINGAN<br>
+      INFORMASI PUBLIK
+    </div>
+  </footer>
+
+</main>
+
+<script>
+  var gate = document.getElementById('gate');
+  var main = document.getElementById('main');
+  var lanjutBtn = document.getElementById('lanjutBtn');
+
+  function enterSite() {
+    gate.classList.add('leaving');
+    main.classList.add('revealed');
+    document.body.style.overflow = '';
+    setTimeout(function () {
+      gate.style.display = 'none';
+    }, 900);
+  }
+
+  lanjutBtn.addEventListener('click', enterSite);
+
+  // Tabs
+  var tabButtons = document.querySelectorAll('.tab-btn');
+  var sections = {
+    'tab-permen': document.getElementById('tab-permen'),
+    'tab-uu': document.getElementById('tab-uu'),
+    'tab-pedoman': document.getElementById('tab-pedoman')
+  };
+
+  tabButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var target = btn.getAttribute('data-target');
+      tabButtons.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      Object.keys(sections).forEach(function (key) {
+        var el = sections[key];
+        if (key === target) {
+          el.hidden = false;
+          // restart card entrance animation
+          el.querySelectorAll('.doc-card').forEach(function (card) {
+            card.style.animation = 'none';
+            void card.offsetWidth;
+            card.style.animation = '';
+          });
+        } else {
+          el.hidden = true;
+        }
+      });
+    });
+  });
+</script>
 
 </body>
 </html>
