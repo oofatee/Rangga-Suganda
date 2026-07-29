@@ -4,6 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SI-TELADAN — Sistem Informasi Teknik Legal Drafting Daerah</title>
+
+<meta name="description" content="SI-TELADAN menyediakan dasar hukum dan pedoman teknis penyusunan Rancangan Peraturan Bupati Indragiri Hulu — Permen, Undang-Undang, dan pedoman teknis yang dapat diakses dan diunduh secara terbuka.">
+<link rel="icon" type="image/png" href="img/logo-indragiri-hulu.png">
+<link rel="apple-touch-icon" href="img/logo-indragiri-hulu.png">
+<link rel="canonical" href="https://oofatee.github.io/Rangga-Suganda/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SI-TELADAN">
+<meta property="og:title" content="SI-TELADAN — Sistem Informasi Teknik Legal Drafting Rancangan Peraturan Bupati Indragiri Hulu">
+<meta property="og:description" content="Dasar hukum dan pedoman teknis penyusunan Rancangan Peraturan Bupati Indragiri Hulu, terbuka untuk diakses dan diunduh masyarakat.">
+<meta property="og:image" content="https://oofatee.github.io/Rangga-Suganda/img/logo-indragiri-hulu.png">
+<meta property="og:url" content="https://oofatee.github.io/Rangga-Suganda/">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SI-TELADAN — Sistem Informasi Teknik Legal Drafting Daerah">
+<meta name="twitter:description" content="Dasar hukum dan pedoman teknis penyusunan Rancangan Peraturan Bupati Indragiri Hulu, terbuka untuk diakses dan diunduh masyarakat.">
+<meta name="twitter:image" content="https://oofatee.github.io/Rangga-Suganda/img/logo-indragiri-hulu.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -180,6 +197,10 @@
   /* ===== TOOLBAR: breadcrumb + search + sort ===== */
   .toolbar { padding: 26px 24px 0; display: flex; flex-direction: column; gap: 14px; }
   .breadcrumb { font-size: 0.68rem; color: var(--text-dim); }
+  .doc-counter { font-size: 0.68rem; color: var(--text-dim); margin-top: -8px; }
+  mark {
+    background: var(--gold); color: var(--ink); padding: 0 2px; border-radius: 2px;
+  }
   .control-bar { display: flex; gap: 10px; flex-wrap: wrap; }
   .search-box {
     flex: 1 1 260px; display: flex; align-items: center; gap: 8px; background: var(--surface);
@@ -400,10 +421,11 @@
   <!-- ===== TOOLBAR ===== -->
   <div class="toolbar">
     <div class="breadcrumb mono" id="breadcrumb">Beranda / Permen</div>
+    <div class="doc-counter mono" id="docCounter">2 dokumen tersedia</div>
     <div class="control-bar">
       <div class="search-box">
         <span data-icon="search"></span>
-        <input type="text" id="searchInput" placeholder="Cari dokumen, nomor, atau kata kunci...">
+        <input type="text" id="searchInput" placeholder="Cari dokumen, nomor, atau kata kunci... (tekan /)">
         <button class="clear-btn" id="clearSearch" type="button" hidden aria-label="Bersihkan pencarian">✕</button>
       </div>
       <select class="sort-select" id="sortSelect" aria-label="Urutkan dokumen">
@@ -528,7 +550,16 @@
     });
   }
 
-  function cardHTML(d) {
+  function highlightText(text, q) {
+    var escaped = escapeHtml(text);
+    if (!q) return escaped;
+    var escapedQuery = escapeHtml(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (!escapedQuery) return escaped;
+    var re = new RegExp('(' + escapedQuery + ')', 'ig');
+    return escaped.replace(re, '<mark>$1</mark>');
+  }
+
+  function cardHTML(d, q) {
     var badge = d.isNew ? '<span class="badge-new">BARU</span>' : '';
     var sizeChip = d.size ? '<span class="chip">' + d.size + '</span>' : '';
     var previewBtn = d.format === 'PDF'
@@ -537,10 +568,10 @@
     return (
       '<div class="doc-card" id="card-' + d.id + '">' +
         '<div class="doc-card-head">' +
-          '<span class="doc-num mono">' + escapeHtml(d.num) + '</span>' + badge +
+          '<span class="doc-num mono">' + highlightText(d.num, q) + '</span>' + badge +
         '</div>' +
-        '<a class="doc-title" href="' + d.href + '" target="_blank" data-action="open" data-id="' + d.id + '">' + escapeHtml(d.title) + '</a>' +
-        '<p class="doc-desc">' + escapeHtml(d.desc) + '</p>' +
+        '<a class="doc-title" href="' + d.href + '" target="_blank" data-action="open" data-id="' + d.id + '">' + highlightText(d.title, q) + '</a>' +
+        '<p class="doc-desc">' + highlightText(d.desc, q) + '</p>' +
         '<div class="doc-meta"><span class="chip">' + d.format + '</span>' + sizeChip + '</div>' +
         '<div class="doc-actions">' +
           '<a class="btn" href="' + d.href + '" target="_blank" data-action="open" data-id="' + d.id + '">Unduh →</a>' +
@@ -570,29 +601,32 @@
     else if (sortMode === 'num') docs.sort(function (a, b) { return a.num.localeCompare(b.num); });
     else if (sortMode === 'type') docs.sort(function (a, b) { return a.format.localeCompare(b.format); });
 
-    grid.innerHTML = docs.map(cardHTML).join('');
+    grid.innerHTML = docs.map(function (d) { return cardHTML(d, q); }).join('');
     empty.hidden = docs.length !== 0;
 
-    updateHeader(q);
+    updateHeader(q, docs.length);
   }
 
-  function updateHeader(q) {
+  function updateHeader(q, count) {
     var iconEl = document.getElementById('sectionIcon');
     var labelEl = document.getElementById('sectionLabel');
     var titleEl = document.getElementById('sectionTitle');
     var bc = document.getElementById('breadcrumb');
+    var counterEl = document.getElementById('docCounter');
 
     if (q) {
       iconEl.innerHTML = ICONS.search;
       labelEl.textContent = 'Hasil Pencarian';
       titleEl.textContent = '"' + q + '"';
       bc.textContent = 'Beranda / Hasil pencarian untuk "' + q + '"';
+      counterEl.textContent = count + ' dokumen ditemukan dari total ' + DOCS.length;
     } else {
       var info = CAT_INFO[currentTab];
       iconEl.innerHTML = ICONS[currentTab];
       labelEl.textContent = info.kategori;
       titleEl.textContent = info.label;
       bc.textContent = 'Beranda / ' + info.label;
+      counterEl.textContent = count + ' dokumen tersedia di kategori ini';
     }
   }
 
@@ -733,6 +767,13 @@
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closePreview();
+    if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      var tag = document.activeElement ? document.activeElement.tagName : '';
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    }
   });
 
   var themeToggle = document.getElementById('themeToggle');
