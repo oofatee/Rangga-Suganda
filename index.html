@@ -58,6 +58,10 @@
     outline-offset: 3px;
   }
 
+  /* Elements toggled via the `hidden` attribute must always actually hide,
+     even if a class on them also sets display:flex/grid elsewhere. */
+  [hidden] { display: none !important; }
+
   /* ===== GATE (landing screen) ===== */
   .gate {
     position: fixed;
